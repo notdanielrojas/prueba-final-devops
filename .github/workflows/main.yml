@@ -120,6 +120,14 @@ jobs:
       - name: Checkout del código
         uses: actions/checkout@v3
 
+      - name: Instalar Snyk CLI
+        run: npm install -g snyk
+
+      - name: Authenticate Snyk CLI
+        run: snyk auth ${{ secrets.SNYK_TOKEN }}
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
       - name: Listar archivos en el directorio raíz
         run: ls -la
 
