@@ -9,28 +9,25 @@ resource "aws_instance" "ec2-prueba-final" {
   user_data = <<-EOF
     #!/bin/bash
     sudo apt update
-    sudo apt install -y git 
+    sudo apt install -y git curl nodejs npm
 
-    # Clonar el repositorio de tu aplicación
-    git clone https://github.com/notdanielrojas/prueba-final-devops.git
+    # Clonar el repositorio
+    git clone https://github.com/notdanielrojas/prueba-final-devops.git /home/ubuntu/app
 
-    # Instalar dependencias 
-    cd prueba-final-devops
+    # Instalar dependencias
+    cd /home/ubuntu/app
     npm install
 
-    # Instalar PM2
+    # Instalar PM2 y ejecutar la app
     sudo npm install pm2 -g
-
-    # Iniciar la aplicación con PM2
     pm2 start npm --name "landingpage-yossequiropractica" -- start
-
-    # Guardar la lista de procesos de PM2
     pm2 save
   EOF
 
   tags = {
     Name = var.instance_name
   }
+
 
   # Conexión SSH
   connection {

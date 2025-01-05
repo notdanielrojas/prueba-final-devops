@@ -22,7 +22,6 @@ jobs:
       - name: Scan IAC code
         run: snyk iac test ./Terraform/** --severity-threshold=high
 
-
   deploy-terraform-app:
     runs-on: ubuntu-latest
     needs: snyk-security-scan
@@ -45,7 +44,6 @@ jobs:
          mkdir -p ~/.terraform.d
          echo "{\"credentials\":{\"app.terraform.io\":{\"token\":\"${{ secrets.TERRAFORM_CLOUD_TOKEN }}\"}}}" > ~/.terraform.d/credentials.tfrc.json
 
-
       - name: Terraform Init
         run: terraform -chdir="./Terraform/" init
 
@@ -55,14 +53,27 @@ jobs:
       - name: Terraform Apply
         run: terraform -chdir="./Terraform/" apply -auto-approve
 
+      - name: Obtener dirección IP pública del EC2
+        id: output
+        run: echo "::set-output name=public_ip::$(terraform -chdir='./Terraform/' output -raw ec2_public_ip)"
+
+      - name: Copiar aplicación al EC2
+        run: |
+          scp -i /path/to/key.pem -r ./app ubuntu@${{ steps.output.outputs.public_ip }}:/home/ubuntu/app
+          ssh -i /path/to/key.pem ubuntu@${{ steps.output.outputs.public_ip }} "cd /home/ubuntu/app && npm install && pm2 start npm --name 'landingpage-yossequiropractica' -- start"
+
   deploy-docker-app:
     runs-on: ubuntu-latest
     needs: deploy-terraform-app
     steps:
       - name: Checkout del código
         uses: actions/checkout@v3
-        with:
-          path: ./Docker
+
+      - name: Listar archivos en el directorio raíz
+        run: ls -la
+
+      - name: Listar archivos del directorio Docker
+        run: ls -la ./Docker
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -84,9 +95,9 @@ jobs:
         id: build-image
         uses: docker/build-push-action@v3
         with:
-          context: .
-          file: ./Docker/Dockerfile 
-          push: false 
+          context: ./Docker
+          file: ./Docker/Dockerfile
+          push: false
           tags: ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY_DOCKER }}:latest
 
       - name: Escaneo de la imagen Docker con Snyk
@@ -98,10 +109,10 @@ jobs:
           args: -d
 
       - name: Push de la imagen Docker
-        if: ${{ success() }}  
+        if: ${{ success() }}
         uses: docker/build-push-action@v3
         with:
-          context: .
-          file: ./Docker/Dockerfile 
+          context: ./Docker
+          file: ./Docker/Dockerfile
           push: true
           tags: ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY_DOCKER }}:latest
