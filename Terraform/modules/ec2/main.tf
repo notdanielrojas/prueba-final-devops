@@ -55,6 +55,6 @@ resource "aws_instance" "ec2-prueba-final" {
     type = "ssh"
     user = "ec2-user"
     host = self.public_ip
-    private_key = file("\\\\wsl.localhost\\Ubuntu\\media\\keys\\keypair-ssh.pem")
+    private_key = file("/media/keys/keypair-ssh.pem")
   }
 }
