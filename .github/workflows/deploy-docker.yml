@@ -16,20 +16,20 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Crear repositorio ECR 
+      - name: Crear repositorio ECR (si no existe)
         run: |
+          aws ecr describe-repositories --repository-names ${{ secrets.ECR_REPOSITORY_DOCKER }} || \
           aws ecr create-repository \
             --repository-name ${{ secrets.ECR_REPOSITORY_DOCKER }} \
             --region ${{ secrets.AWS_REGION }}
 
-      - name: Instalar dependencias
-        working-directory: ./  
+      - name: Instalar dependencias Node.js
         run: npm install
 
       - name: Build de la imagen Docker
         id: build-image
         uses: docker/build-push-action@v3
         with:
-          context: ./  
+          context: ./Docker
           push: true
           tags: ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY_DOCKER }}:latest
