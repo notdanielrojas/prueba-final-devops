@@ -61,10 +61,10 @@ jobs:
         run: |
           echo "${{ secrets.EC2_SSH_KEY }}" > /tmp/key.pem
           chmod 400 /tmp/key.pem
-          scp -i /tmp/key.pem -r ./app ubuntu@${{ steps.output.outputs.public_ip }}:/home/ubuntu/app
-          ssh -i /tmp/key.pem ubuntu@${{ steps.output.outputs.public_ip }} "cd /home/ubuntu/app && npm install && pm2 start npm --name 'landingpage-yossequiropractica' -- start"
-        env:
-          PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+          scp -o StrictHostKeyChecking=no -i /tmp/key.pem -r ./app ubuntu@44.197.186.253:/home/ubuntu/app
+          ssh -o StrictHostKeyChecking=no -i /tmp/key.pem ubuntu@44.197.186.253 "cd /home/ubuntu/app && npm install && pm2 start npm --name 'landingpage-yossequiropractica' -- start"
+    env:
+      PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
 
   deploy-docker-app:
     runs-on: ubuntu-latest
