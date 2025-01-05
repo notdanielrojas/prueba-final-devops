@@ -15,4 +15,4 @@ jobs:
 
   deploy-terraform-app:
     uses: ./.github/workflows/deploy-terraform.yml
-    needs: deploy-docker-app 
+    needs: deploy-docker-app
