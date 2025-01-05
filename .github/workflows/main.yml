@@ -63,19 +63,11 @@ jobs:
         run: |
           echo "${{ secrets.EC2_SSH_KEY }}" > /tmp/id_rsa
           chmod 400 /tmp/id_rsa
-          export SSH_PRIVATE_KEY="/tmp/id_rsa"
-
-      - name: Verificar IP pública de EC2
-        run: |
-         echo "IP pública: ${{ steps.output.outputs.public_ip }}"
 
       - name: Verificar conexión SSH
         run: |
           echo "Verificando conexión SSH a EC2..."
-          ssh -v -o StrictHostKeyChecking=no -i /tmp/id_rsa ec2-user@${{ steps.output.outputs.public_ip }} "echo 'Conexión exitosa'"
-
-      - name: Verificar existencia de la carpeta 'App'
-        run: ls -la ./App
+          ssh -o StrictHostKeyChecking=no -i /tmp/id_rsa ec2-user@${{ steps.output.outputs.public_ip }} "echo 'Conexión exitosa'"
 
       - name: Copiar aplicación al EC2
         run: |
@@ -87,12 +79,18 @@ jobs:
         run: |
           echo "Instalando dependencias y arrancando la aplicación en EC2..."
           ssh -o StrictHostKeyChecking=no -i /tmp/id_rsa ec2-user@${{ steps.output.outputs.public_ip }} << 'EOF'
+            echo "Instalando Node.js y PM2..."
+            curl -fsSL https://rpm.nodesource.com/setup_16.x | sudo bash -
+            sudo yum install -y nodejs
+            sudo npm install -g pm2
+            echo "Instalando dependencias de la aplicación..."
             cd /home/ec2-user/app
             npm install
             pm2 start npm --name 'landingpage-yossequiropractica' -- start
           EOF
-    env:
-      PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+
+      - name: Limpiar archivo de clave SSH
+        run: rm -f /tmp/id_rsa
 
   deploy-docker-app:
     runs-on: ubuntu-latest
