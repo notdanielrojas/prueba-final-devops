@@ -53,6 +53,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: ./Docker
+          file: ./Docker/Dockerfile 
           push: false 
           tags: ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY_DOCKER }}:latest
 
@@ -69,31 +70,37 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: ./Docker
+          file: ./Docker/Dockerfile 
           push: true
           tags: ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY_DOCKER }}:latest
 
   deploy-terraform-app:
-    runs-on: ubuntu-latest
-    needs: snyk-security-scan 
-    steps:
-      - name: Checkout del código
-        uses: actions/checkout@v3
+   runs-on: ubuntu-latest
+   needs: snyk-security-scan 
+   steps:
+    - name: Checkout del código
+      uses: actions/checkout@v3
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.MY_AWS_REGION }}
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.MY_AWS_REGION }}
 
-      - name: Instalar Terraform
-        uses: hashicorp/setup-terraform@v3
+    - name: Instalar Terraform
+      uses: hashicorp/setup-terraform@v3
 
-      - name: Terraform Init
-        run: terraform -chdir="./Terraform/" init
+    - name: Terraform Login
+      run: terraform login -no-color
+      env:
+        TERRAFORM_CLOUD_TOKEN: ${{ secrets.TERRAFORM_CLOUD_TOKEN }}
 
-      - name: Terraform Plan
-        run: terraform -chdir="./Terraform/" plan
+    - name: Terraform Init
+      run: terraform -chdir="./Terraform/" init
 
-      - name: Terraform Apply
-        run: terraform -chdir="./Terraform/" apply -auto-approve
+    - name: Terraform Plan
+      run: terraform -chdir="./Terraform/" plan
+
+    - name: Terraform Apply
+      run: terraform -chdir="./Terraform/" apply -auto-approve
