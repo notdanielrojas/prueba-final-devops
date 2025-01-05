@@ -89,7 +89,7 @@ jobs:
             sudo mkdir -p /var/www/landingpage
 
             # Copiar archivos estáticos a la carpeta web
-            sudo cp -r /home/ec2-user/app/* /var/www/landingpage/
+            sudo cp -r /home/ec2-user/app/App/* /var/www/landingpage/
 
             # Crear la configuración de Nginx
             sudo mkdir -p /etc/nginx/conf.d
