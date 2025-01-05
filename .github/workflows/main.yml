@@ -85,6 +85,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: ./Docker
+          file: ./Docker/Dockerfile 
           push: false 
           tags: ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY_DOCKER }}:latest
 
@@ -101,5 +102,6 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: ./Docker
+          file: ./Docker/Dockerfile 
           push: true
           tags: ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY_DOCKER }}:latest

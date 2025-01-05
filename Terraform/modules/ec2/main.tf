@@ -5,12 +5,7 @@ resource "aws_instance" "ec2-prueba-final" {
   subnet_id              = var.subnet_id
   associate_public_ip_address = true
   key_name                    = var.key_name
-  disable_api_termination = true
 
-metadata_options {
-    http_tokens = "required"
-  }
-  
   user_data = <<-EOF
     #!/bin/bash
     sudo apt update
