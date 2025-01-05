@@ -15,6 +15,8 @@ jobs:
       - name: Login a Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
 
       - name: Crear repositorio ECR (si no existe)
         run: |
