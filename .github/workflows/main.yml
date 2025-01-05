@@ -2,7 +2,7 @@ name: Despliegue de aplicaciones
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   snyk-security-scan:
@@ -41,8 +41,8 @@ jobs:
 
       - name: Configurar credenciales de Terraform Cloud
         run: |
-         mkdir -p ~/.terraform.d
-         echo "{\"credentials\":{\"app.terraform.io\":{\"token\":\"${{ secrets.TERRAFORM_CLOUD_TOKEN }}\"}}}" > ~/.terraform.d/credentials.tfrc.json
+          mkdir -p ~/.terraform.d
+          echo "{\"credentials\":{\"app.terraform.io\":{\"token\":\"${{ secrets.TERRAFORM_CLOUD_TOKEN }}\"}}}" > ~/.terraform.d/credentials.tfrc.json
 
       - name: Terraform Init
         run: terraform -chdir="./Terraform/" init
@@ -59,8 +59,12 @@ jobs:
 
       - name: Copiar aplicación al EC2
         run: |
-          scp -i /path/to/key.pem -r ./app ubuntu@${{ steps.output.outputs.public_ip }}:/home/ubuntu/app
-          ssh -i /path/to/key.pem ubuntu@${{ steps.output.outputs.public_ip }} "cd /home/ubuntu/app && npm install && pm2 start npm --name 'landingpage-yossequiropractica' -- start"
+          echo "${{ secrets.EC2_SSH_KEY }}" > /tmp/key.pem
+          chmod 400 /tmp/key.pem
+          scp -i /tmp/key.pem -r ./app ubuntu@${{ steps.output.outputs.public_ip }}:/home/ubuntu/app
+          ssh -i /tmp/key.pem ubuntu@${{ steps.output.outputs.public_ip }} "cd /home/ubuntu/app && npm install && pm2 start npm --name 'landingpage-yossequiropractica' -- start"
+        env:
+          PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
 
   deploy-docker-app:
     runs-on: ubuntu-latest
