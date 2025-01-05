@@ -45,11 +45,6 @@ module "ec2" {
   key_name = var.key_name
 }
 
-# Módulo ECR
-module "ecr" {
-  source = "./modules/ecr"
-}
-
 # Módulo Lambda
 module "lambda" {
   source            = "./modules/lambda"

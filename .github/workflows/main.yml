@@ -98,7 +98,7 @@ jobs:
                 listen 80;
 
                 # Raíz de la aplicación
-                root /var/www/landingpage;
+                root /home/ec2-user/app/App;
                 index index.html;
 
                 # Configuración para servir archivos estáticos
