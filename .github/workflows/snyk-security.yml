@@ -1,6 +1,6 @@
 name: Escaneo de seguridad con Snyk
 
-on: 
+on:
   workflow_call:
 
 jobs:
@@ -10,21 +10,21 @@ jobs:
       - name: Checkout del código
         uses: actions/checkout@v3
 
-      - name: Install Snyk CLI
+      - name: Instalar Snyk CLI
         run: npm install -g snyk
 
-      - name: Escaneo de archivos Terraform con Snyk
+      - name: Escaneo de IaC con Snyk
         uses: snyk/actions/iac@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           command: test
-          args: -d
+          args: ./Terraform
 
-      - name: Escaneo de la imagen con Snyk
+      - name: Escaneo de la imagen Docker con Snyk
         uses: snyk/actions/docker@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          image: ${{ needs.deploy-docker-app.outputs.registry }}/${{ secrets.ECR_REPOSITORY_DOCKER }}:latest
+          image: ${{ secrets.ECR_REPOSITORY_DOCKER }}:latest
           args: -d
