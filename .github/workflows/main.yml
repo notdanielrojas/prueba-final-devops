@@ -1,0 +1,17 @@
+name: Despliegue de aplicaciones
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  snyk-security-scan:
+    uses: ./.github/workflows/snyk-security.yml
+
+  deploy-docker-app:
+    uses: ./.github/workflows/deploy-docker.yml
+    needs: snyk-security-scan
+
+  deploy-terraform-app:
+    uses: ./.github/workflows/deploy-terraform.yml
+    needs: snyk-security-scan
