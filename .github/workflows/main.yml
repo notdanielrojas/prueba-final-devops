@@ -80,14 +80,14 @@ jobs:
       - name: Copiar aplicación al EC2
         run: |
           echo "Copiando archivos al EC2..."
-          ssh -o StrictHostKeyChecking=no -i /tmp/id_rsa ec2-user@${{ steps.output.outputs.public_ip }} "mkdir -p /home/ubuntu/app"
-          scp -o StrictHostKeyChecking=no -i /tmp/id_rsa -r ./App ec2-user@${{ steps.output.outputs.public_ip }}:/home/ubuntu/app
+          ssh -o StrictHostKeyChecking=no -i /tmp/id_rsa ec2-user@${{ steps.output.outputs.public_ip }} "mkdir -p /home/ec2-user/app"
+          scp -o StrictHostKeyChecking=no -i /tmp/id_rsa -r ./App ec2-user@${{ steps.output.outputs.public_ip }}:/home/ec2-user/app
 
       - name: Instalar dependencias y arrancar aplicación en EC2
         run: |
           echo "Instalando dependencias y arrancando la aplicación en EC2..."
           ssh -o StrictHostKeyChecking=no -i /tmp/id_rsa ec2-user@${{ steps.output.outputs.public_ip }} << 'EOF'
-            cd /home/ubuntu/app
+            cd /home/ec2-user/app
             npm install
             pm2 start npm --name 'landingpage-yossequiropractica' -- start
           EOF
