@@ -100,3 +100,4 @@ jobs:
 
     - name: Terraform Apply
       run: terraform -chdir="./Terraform/" apply -auto-approve
+
