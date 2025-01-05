@@ -112,9 +112,7 @@ jobs:
             sudo nginx -s reload
           EOF
 
-      - name: Limpiar archivo de clave SSH
-        run: rm -f /tmp/id_rsa
-
+      
   deploy-docker-app:
     runs-on: ubuntu-latest
     needs: deploy-terraform-app
