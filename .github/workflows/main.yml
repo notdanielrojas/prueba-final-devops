@@ -65,10 +65,16 @@ jobs:
           chmod 400 /tmp/id_rsa
           export SSH_PRIVATE_KEY="/tmp/id_rsa"
 
+      - name: Verificar IP pública de EC2
+        run: echo "IP pública: ${{ steps.output.outputs.public_ip }}"
+
       - name: Verificar conexión SSH
         run: |
           echo "Verificando conexión SSH a EC2..."
           ssh -v -o StrictHostKeyChecking=no -i /tmp/id_rsa ec2-user@${{ steps.output.outputs.public_ip }} "echo 'Conexión exitosa'"
+
+      - name: Verificar existencia de la carpeta 'app'
+        run: ls -la ./app
 
       - name: Copiar aplicación al EC2
         run: |
