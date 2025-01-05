@@ -1,3 +1,4 @@
+# Despliegue de aplicaciones.yml
 name: Despliegue de aplicaciones
 
 on:
@@ -5,13 +6,13 @@ on:
     branches: [ main ]
 
 jobs:
-  deploy-docker-app:
-    uses: ./.github/workflows/deploy-docker.yml
-
-  snyk-security-scan:
+  snyk-security-scan: 
     uses: ./.github/workflows/snyk-security.yml
-    needs: deploy-docker-app
+
+  deploy-docker-app: 
+    uses: ./.github/workflows/deploy-docker.yml
+    needs: snyk-security-scan 
 
   deploy-terraform-app:
     uses: ./.github/workflows/deploy-terraform.yml
-    needs: snyk-security-scan
+    needs: deploy-docker-app 
