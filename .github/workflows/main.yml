@@ -22,7 +22,36 @@ jobs:
       - name: Scan IAC code
         run: snyk iac test ./Terraform/** --severity-threshold=high
 
-      
+
+  deploy-terraform-app:
+    runs-on: ubuntu-latest
+    needs: snyk-security-scan
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.MY_AWS_REGION }}
+
+      - name: Instalar Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Configurar credenciales de Terraform Cloud
+        run: echo "{\"credentials\":{\"app.terraform.io\":{\"token\":\"${{ secrets.TERRAFORM_CLOUD_TOKEN }}\"}}}" > ~/.terraform.d/credentials.tfrc.json
+
+      - name: Terraform Init
+        run: terraform -chdir="./Terraform/" init
+
+      - name: Terraform Plan
+        run: terraform -chdir="./Terraform/" plan
+
+      - name: Terraform Apply
+        run: terraform -chdir="./Terraform/" apply -auto-approve
+
   deploy-docker-app:
     runs-on: ubuntu-latest
     needs: deploy-terraform-app
@@ -71,33 +100,3 @@ jobs:
           context: ./Docker
           push: true
           tags: ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY_DOCKER }}:latest
-
-  deploy-terraform-app:
-   runs-on: ubuntu-latest
-   needs: snyk-security-scan 
-   steps:
-    - name: Checkout del código
-      uses: actions/checkout@v3
-
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ secrets.MY_AWS_REGION }}
-
-    - name: Instalar Terraform
-      uses: hashicorp/setup-terraform@v3
-
-    - name: Set Terraform Cloud token
-      run: echo "TERRAFORM_CLOUD_TOKEN=${{ secrets.TERRAFORM_CLOUD_TOKEN }}" >> $GITHUB_ENV
-
-    - name: Terraform Init
-      run: terraform -chdir="./Terraform/" init
-
-    - name: Terraform Plan
-      run: terraform -chdir="./Terraform/" plan
-
-    - name: Terraform Apply
-      run: terraform -chdir="./Terraform/" apply -auto-approve
-
