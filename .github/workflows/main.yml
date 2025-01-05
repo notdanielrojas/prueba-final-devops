@@ -89,10 +89,8 @@ jobs:
     - name: Instalar Terraform
       uses: hashicorp/setup-terraform@v3
 
-    - name: Terraform Login
-      run: echo "yes" | terraform login -no-color
-      env:
-        TERRAFORM_CLOUD_TOKEN: ${{ secrets.TERRAFORM_CLOUD_TOKEN }}
+    - name: Set Terraform Cloud token
+      run: echo "TERRAFORM_CLOUD_TOKEN=${{ secrets.TERRAFORM_CLOUD_TOKEN }}" >> $GITHUB_ENV
 
     - name: Terraform Init
       run: terraform -chdir="./Terraform/" init
