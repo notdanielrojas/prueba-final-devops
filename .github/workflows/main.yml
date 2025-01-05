@@ -70,16 +70,25 @@ jobs:
           echo "Verificando conexión SSH a EC2..."
           ssh -o StrictHostKeyChecking=no -i /tmp/id_rsa ubuntu@${{ steps.output.outputs.public_ip }} "echo 'Conexión exitosa'"
 
-      - name: Copiar aplicación al EC2
+      - name: Copiar aplicación al EC2 usando rsync
         run: |
           echo "Copiando archivos al EC2..."
-          scp -o StrictHostKeyChecking=no -i /tmp/id_rsa -r ./app ubuntu@${{ steps.output.outputs.public_ip }}:/home/ubuntu/app
+          rsync -avz --delete -e "ssh -i /tmp/id_rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" ./repositorios/api ubuntu@${{ steps.output.outputs.public_ip }}:/home/ubuntu/web/
 
-      - name: Instalar dependencias y iniciar aplicación en EC2
+      - name: Esperar a que Docker esté listo
+        run: |
+          echo "Esperando a que Docker esté listo..."
+          until ssh -i /tmp/id_rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ubuntu@${{ steps.output.outputs.public_ip }} "sudo docker info" > /dev/null 2>&1; do
+            echo "Esperando a que Docker esté en funcionamiento..."
+            sleep 5
+          done
+          echo "Docker está listo."
+
+      - name: Instalar dependencias y arrancar aplicación en EC2
         run: |
           echo "Instalando dependencias y arrancando la aplicación en EC2..."
-          ssh -o StrictHostKeyChecking=no -i /tmp/id_rsa ubuntu@${{ steps.output.outputs.public_ip }} << 'EOF'
-            cd /home/ubuntu/app
+          ssh -i /tmp/id_rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ubuntu@${{ steps.output.outputs.public_ip }} << 'EOF'
+            cd /home/ubuntu/web
             npm install
             pm2 start npm --name 'landingpage-yossequiropractica' -- start
           EOF
@@ -134,9 +143,6 @@ jobs:
 
       - name: Push de la imagen Docker
         if: ${{ success() }}
-        uses: docker/build-push-action@v3
-        with:
-          context: ./Docker
-          file: ./Docker/Dockerfile
-          push: true
-          tags: ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY_DOCKER }}:latest
+        run: |
+          docker tag ${{ steps.build-image.outputs.image }} ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY_DOCKER }}:latest
+          docker push ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY_DOCKER }}:latest
