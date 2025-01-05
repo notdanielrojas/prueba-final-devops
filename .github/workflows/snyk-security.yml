@@ -13,6 +13,11 @@ jobs:
       - name: Instalar Snyk CLI
         run: npm install -g snyk
 
+      - name: Authenticate Snyk CLI
+        run: snyk auth
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
       - name: Escaneo de IaC con Snyk
         uses: snyk/actions/iac@master
         env:
