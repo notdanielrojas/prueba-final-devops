@@ -20,7 +20,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
       - name: Scan IAC code
-        run: snyk iac test terraform/** --severity-threshold=high
+        run: snyk iac test ./Terraform/** --severity-threshold=high
 
       - name: Escaneo de la imagen Docker con Snyk
         uses: snyk/actions/docker@master
