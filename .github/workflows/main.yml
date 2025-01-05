@@ -64,21 +64,21 @@ jobs:
           echo "${{ secrets.EC2_SSH_KEY }}" > /tmp/id_rsa
           chmod 400 /tmp/id_rsa
           export SSH_PRIVATE_KEY="/tmp/id_rsa"
-      
+
       - name: Verificar conexión SSH
         run: |
           echo "Verificando conexión SSH a EC2..."
-          ssh -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY ubuntu@${{ steps.output.outputs.public_ip }} "echo 'Conexión exitosa'"
+          ssh -o StrictHostKeyChecking=no -i /tmp/id_rsa ubuntu@${{ steps.output.outputs.public_ip }} "echo 'Conexión exitosa'"
 
       - name: Copiar aplicación al EC2
         run: |
           echo "Copiando archivos al EC2..."
-          scp -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY -r ./app ubuntu@${{ steps.output.outputs.public_ip }}:/home/ubuntu/app
+          scp -o StrictHostKeyChecking=no -i /tmp/id_rsa -r ./app ubuntu@${{ steps.output.outputs.public_ip }}:/home/ubuntu/app
 
       - name: Instalar dependencias y iniciar aplicación en EC2
         run: |
           echo "Instalando dependencias y arrancando la aplicación en EC2..."
-          ssh -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY ubuntu@${{ steps.output.outputs.public_ip }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no -i /tmp/id_rsa ubuntu@${{ steps.output.outputs.public_ip }} << 'EOF'
             cd /home/ubuntu/app
             npm install
             pm2 start npm --name 'landingpage-yossequiropractica' -- start
