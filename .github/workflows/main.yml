@@ -74,13 +74,13 @@ jobs:
           echo "Verificando conexión SSH a EC2..."
           ssh -v -o StrictHostKeyChecking=no -i /tmp/id_rsa ec2-user@${{ steps.output.outputs.public_ip }} "echo 'Conexión exitosa'"
 
-      - name: Verificar existencia de la carpeta 'app'
-        run: ls -la ./app
+      - name: Verificar existencia de la carpeta 'App'
+        run: ls -la ./App
 
       - name: Copiar aplicación al EC2
         run: |
           echo "Copiando archivos al EC2..."
-          scp -o StrictHostKeyChecking=no -i /tmp/id_rsa -r ./app ec2-user@${{ steps.output.outputs.public_ip }}:/home/ubuntu/app
+          scp -o StrictHostKeyChecking=no -i /tmp/id_rsa -r ./App ec2-user@${{ steps.output.outputs.public_ip }}:/home/ubuntu/app
 
       - name: Instalar dependencias y arrancar aplicación en EC2
         run: |
