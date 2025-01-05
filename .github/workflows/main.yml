@@ -75,18 +75,42 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i /tmp/id_rsa ec2-user@${{ steps.output.outputs.public_ip }} "mkdir -p /home/ec2-user/app"
           scp -o StrictHostKeyChecking=no -i /tmp/id_rsa -r ./App ec2-user@${{ steps.output.outputs.public_ip }}:/home/ec2-user/app
 
-      - name: Instalar dependencias y arrancar aplicación en EC2
+      - name: Instalar Nginx y configurar para servir archivos estáticos
         run: |
-          echo "Instalando dependencias y arrancando la aplicación en EC2..."
+          echo "Instalando Nginx y configurando servidor para archivos estáticos..."
           ssh -o StrictHostKeyChecking=no -i /tmp/id_rsa ec2-user@${{ steps.output.outputs.public_ip }} << 'EOF'
-            echo "Instalando Node.js y PM2..."
-            curl -fsSL https://rpm.nodesource.com/setup_16.x | sudo bash -
-            sudo yum install -y nodejs
-            sudo npm install -g pm2
-            echo "Instalando dependencias de la aplicación..."
-            cd /home/ec2-user/app
-            npm install
-            pm2 start npm --name 'landingpage-yossequiropractica' -- start
+            # Instalar Nginx
+            sudo yum install -y nginx
+            sudo systemctl enable nginx
+            sudo systemctl start nginx
+
+            # Crear directorio para la aplicación si no existe
+            sudo mkdir -p /var/www/landingpage
+
+            # Copiar archivos estáticos a la carpeta web
+            sudo cp -r /home/ec2-user/app/* /var/www/landingpage/
+
+            # Configurar Nginx
+            sudo tee /etc/nginx/conf.d/landingpage.conf > /dev/null <<EOL
+            server {
+                listen 80;
+
+                # Raíz de la aplicación
+                root /var/www/landingpage;
+                index index.html;
+
+                # Configuración para servir archivos estáticos
+                location / {
+                    try_files \$uri \$uri/ =404;
+                }
+
+                # Manejo de errores
+                error_page 404 /404.html;
+            }
+            EOL
+
+            # Recargar configuración de Nginx
+            sudo nginx -s reload
           EOF
 
       - name: Limpiar archivo de clave SSH
