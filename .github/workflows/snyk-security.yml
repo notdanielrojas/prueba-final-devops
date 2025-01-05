@@ -16,6 +16,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           command: test
+          args: -d
 
       - name: Escaneo de la imagen con Snyk
         uses: snyk/actions/docker@master
@@ -23,3 +24,4 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           image: ${{ needs.deploy-docker-app.outputs.registry }}/${{ secrets.ECR_REPOSITORY_DOCKER }}:latest
+          args: -d
