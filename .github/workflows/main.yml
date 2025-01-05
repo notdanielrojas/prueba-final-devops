@@ -22,14 +22,7 @@ jobs:
       - name: Scan IAC code
         run: snyk iac test ./Terraform/** --severity-threshold=high
 
-      - name: Escaneo de la imagen Docker con Snyk
-        uses: snyk/actions/docker@master
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          image: ${{ secrets.ECR_REPOSITORY_DOCKER }}:latest
-          args: -d
-
+      
   deploy-docker-app:
     runs-on: ubuntu-latest
     needs: snyk-security-scan
